@@ -248,6 +248,14 @@
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
 
+        console.log("Email yang dikirim:", email);
+        console.log("Password yang dikirim:", pass);
+
+        if (!email || !pass) {
+            alert("Mohon masukkan email dan password.");
+            return; // Hentikan proses jika kosong
+        }
+
         // Fungsi yang akan menggunakan email/password user dari Firebase Auth
         auth.signInWithEmailAndPassword(email, pass)
         .then(() => {
@@ -259,7 +267,7 @@
 
     // LOGOUT HANDLER
     document.getElementById("logoutBtn").addEventListener("click", () => {
-        auth.signOut(auth).then(() => {
+        auth.signOut().then(() => {
             // Logika tampilan dihandle oleh auth.onAuthStateChanged
             console.log("Logout berhasil!");
         });
