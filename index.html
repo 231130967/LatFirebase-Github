@@ -225,7 +225,6 @@
     const db = firebase.database();
     
     // Ambil fungsi otentikasi dan database
-    const { signInWithEmailAndPassword, signOut } = firebase.auth;
     const { ref, onValue } = firebase.database;
 
     // Ambil elemen HTML yang dibutuhkan
@@ -250,7 +249,7 @@
         const pass = document.getElementById("password").value;
 
         // Fungsi yang akan menggunakan email/password user dari Firebase Auth
-        signInWithEmailAndPassword(auth, email, pass)
+        auth.signInWithEmailAndPassword(auth, email, pass)
         .then(() => {
             // Logika tampilan dihandle oleh auth.onAuthStateChanged
             console.log("Login berhasil!");
@@ -260,7 +259,7 @@
 
     // LOGOUT HANDLER
     document.getElementById("logoutBtn").addEventListener("click", () => {
-        signOut(auth).then(() => {
+        auth.signOut(auth).then(() => {
             // Logika tampilan dihandle oleh auth.onAuthStateChanged
             console.log("Logout berhasil!");
         });
