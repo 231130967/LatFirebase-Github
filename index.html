@@ -249,7 +249,7 @@
         const pass = document.getElementById("password").value;
 
         // Fungsi yang akan menggunakan email/password user dari Firebase Auth
-        auth.signInWithEmailAndPassword(auth, email, pass)
+        auth.signInWithEmailAndPassword(email, pass)
         .then(() => {
             // Logika tampilan dihandle oleh auth.onAuthStateChanged
             console.log("Login berhasil!");
