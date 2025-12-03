@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Plant Green House Dashboard</title>
     
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
     <style>
         /* Definisi Warna Tema Kuning */
         /* Kuning Cerah (Aksen) */
         :root {
-            --yellow-accent: #ffd700; /* Emas */
-            --yellow-dark: #b8860b; /* Kuning Gelap/Zaitun */
-            --background-light: #fff8e1; /* Kuning Sangat Pucat */
+            --yellow-accent: #ffd700; 
+            --yellow-dark: #b8860b; 
+            --background-light: #fff8e1; 
             --text-color: #333;
-            --danger-color: #d9534f; /* Merah untuk Logout */
+            --danger-color: #d9534f; 
         }
         
         /* Pengaturan Dasar */
@@ -63,7 +67,7 @@
             width: 100%;
             padding: 12px;
             background-color: var(--yellow-accent);
-            color: var(--text-color); /* Warna teks dibuat hitam agar kontras dengan kuning */
+            color: var(--text-color); 
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -74,7 +78,7 @@
 
         #loginBtn:hover {
             background-color: var(--yellow-dark);
-            color: white; /* Teks putih saat hover untuk kontras yang lebih baik */
+            color: white; 
         }
 
         /* --- Desain Dashboard --- */
@@ -106,7 +110,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s;
             text-align: center;
-            border-left: 5px solid var(--yellow-accent); /* Garis tepi kuning */
+            border-left: 5px solid var(--yellow-accent); 
         }
 
         .card:hover {
@@ -135,11 +139,11 @@
         
         /* Status Warna */
         .status-ok {
-            color: var(--yellow-dark); /* Kuning gelap untuk status baik */
+            color: var(--yellow-dark); 
         }
         
         .status-warning {
-            color: #d32f2f; /* Merah untuk peringatan (seperti kurang air) agar menonjol */
+            color: #d32f2f; 
         }
 
         #logoutBtn {
@@ -202,59 +206,152 @@
 </div>
 
 <script>
-    //LOGIN DAN LOGOUT
-document.getElementById("loginBtn").addEventListener("click", () => {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
+    // ----------------------------------------------------
+    // 2. KONFIGURASI DAN INISIALISASI FIREBASE
+    // ----------------------------------------------------
+    const firebaseConfig = {
+        apiKey: "AIzaSyAge_ZYN3uFaRG5qsfPbNYQ0pTAHEWfXq4",
+        authDomain: "latm11.firebaseapp.com",
+        databaseURL: "https://latm11-default-rtdb.asia-southeast1.firebasedatabase.app", // Penting untuk Realtime DB
+        projectId: "latm11",
+        storageBucket: "latm11.firebasestorage.app",
+        messagingSenderId: "784560420898",
+        appId: "1:784560420898:android:db7c3289a2e43903beb27b"
+    };
 
-    // signInWithEmailAndPassword, auth, dan listenToSensors() harus didefinisikan di skrip Firebase Anda (Bagian A)
-    signInWithEmailAndPassword(auth, email, pass)
-    .then(() => {
-        loginForm.style.display = "none";
-        dashboard.style.display = "block";
-        listenToSensors(); 
-    })
-    .catch(err => alert("Login gagal: " + err.message));
-});
+    // Inisialisasi Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    
+    // Ambil fungsi otentikasi dan database
+    const { signInWithEmailAndPassword, signOut } = firebase.auth;
+    const { ref, onValue } = firebase.database;
 
-document.getElementById("logoutBtn").addEventListener("click", () => {
-    signOut(auth).then(() => {
-        dashboard.style.display = "none";
-        loginForm.style.display = "block";
+    // Ambil elemen HTML yang dibutuhkan
+    const loginForm = document.getElementById("loginForm");
+    const dashboard = document.getElementById("dashboard");
+
+    // MONITOR STATUS AUTHENTIKASI
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            loginForm.style.display = "none";
+            dashboard.style.display = "block";
+            listenToSensors(); // Mulai mendengarkan data jika sudah login
+        } else {
+            dashboard.style.display = "none";
+            loginForm.style.display = "block";
+        }
     });
-});
 
-// MENAMPILKAN DATA SENSOR
-function listenToSensors() {
-  const sensorRef = ref(db, "greenhouse/sensors");
+    // LOGIN HANDLER
+    document.getElementById("loginBtn").addEventListener("click", () => {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
 
-  onValue(sensorRef, (snapshot) => {
-    const d = snapshot.val() || {};
+        // Fungsi yang akan menggunakan email/password user dari Firebase Auth
+        signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+            // Logika tampilan dihandle oleh auth.onAuthStateChanged
+            console.log("Login berhasil!");
+        })
+        .catch(err => alert("Login gagal: " + err.message));
+    });
 
-    updateSoil(d.soilMoisture);
-    updateLight(d.lightLevel);
-    updateMotion(d.motion);
-  });
-}
+    // LOGOUT HANDLER
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        signOut(auth).then(() => {
+            // Logika tampilan dihandle oleh auth.onAuthStateChanged
+            console.log("Logout berhasil!");
+        });
+    });
 
-function updateSoil(value) {
-  document.getElementById("soilMoisture").innerText = value + " %";
-  const status = value < 30 ? "Kering" : value < 70 ? "Cukup" : "Basah";
-  document.getElementById("soilStatus").innerText = status;
-}
+    // MENAMPILKAN DATA SENSOR
+    function listenToSensors() {
+      // Pastikan path ini sesuai dengan struktur data Realtime Database Anda
+      // Contoh struktur: "greenhouse": { "sensors": { "soilMoisture": 60, ... } }
+      const sensorRef = ref(db, "greenhouse/sensors"); 
 
-function updateLight(value) {
-  document.getElementById("lightLevel").innerText = value + " %";
-  const status = value < 30 ? "Redup" : value < 70 ? "Cukup" : "Terang";
-  document.getElementById("lightStatus").innerText = status;
-}
+      onValue(sensorRef, (snapshot) => {
+        const d = snapshot.val() || {}; // Menggunakan || {} untuk menghindari error jika data kosong
 
-function updateMotion(value) {
-  document.getElementById("motion").innerText = value ? "Terdeteksi" : "Tidak Terdeteksi";
-  const status = value ? "Ada Gerakan" : "Aman";
-  document.getElementById("motionStatus").innerText = status;
-}
+        updateSoil(d.soilMoisture);
+        updateLight(d.lightLevel);
+        updateMotion(d.motion);
+        updateTemperature(d.temperature); // Memperbaiki pemanggilan fungsi yang hilang
+      });
+    }
+
+    function updateSoil(value) {
+        // Pengecekan value != undefined ditambahkan untuk keamanan
+        const displayValue = value !== undefined ? value : "--"; 
+        document.getElementById("soilMoisture").innerText = displayValue + " %";
+        
+        // Logika Status
+        let statusText;
+        let statusClass;
+        if (value < 30) {
+            statusText = "Kering (Perlu Siram)";
+            statusClass = "status-warning";
+        } else if (value < 70) {
+            statusText = "Cukup";
+            statusClass = "status-ok";
+        } else {
+            statusText = "Basah (Kelembaban Tinggi)";
+            statusClass = "status-ok";
+        }
+        document.getElementById("soilStatus").innerText = statusText;
+        document.getElementById("soilStatus").className = statusClass;
+    }
+
+    function updateLight(value) {
+        const displayValue = value !== undefined ? value : "--";
+        document.getElementById("lightLevel").innerText = displayValue + " %";
+        
+        let statusText;
+        let statusClass;
+        if (value < 30) {
+            statusText = "Redup (Perlu Cahaya)";
+            statusClass = "status-warning";
+        } else if (value < 70) {
+            statusText = "Cukup";
+            statusClass = "status-ok";
+        } else {
+            statusText = "Terang";
+            statusClass = "status-ok";
+        }
+        document.getElementById("lightStatus").innerText = statusText;
+        document.getElementById("lightStatus").className = statusClass;
+    }
+
+    function updateMotion(value) {
+        const isDetected = value === true || value === 1; 
+        const displayValue = isDetected ? "Terdeteksi" : "Tidak Terdeteksi";
+        document.getElementById("motion").innerText = displayValue;
+        
+        const statusText = isDetected ? "Ada Gerakan (Periksa Area)" : "Aman";
+        const statusClass = isDetected ? "status-warning" : "status-ok";
+        
+        document.getElementById("motionStatus").innerText = statusText;
+        document.getElementById("motionStatus").className = statusClass;
+    }
+
+    function updateTemperature(value) {
+        const displayValue = value !== undefined ? value : "--";
+        document.getElementById("temperature").innerText = displayValue + " °C";
+
+        let statusText;
+        let statusClass;
+        if (value < 15 || value > 35) {
+            statusText = "Ekstrem (Perlu Pendingin/Pemanas)";
+            statusClass = "status-warning";
+        } else {
+            statusText = "Stabil";
+            statusClass = "status-ok";
+        }
+        document.getElementById("tempStatus").innerText = statusText;
+        document.getElementById("tempStatus").className = statusClass;
+    }
 </script>
-
 </body>
 </html>
