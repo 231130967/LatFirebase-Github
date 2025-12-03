@@ -8,8 +8,8 @@ const char* password = "12345908";  // Ganti dengan Password Wi-Fi Anda
 // Catatan: Pastikan Anda telah mengaktifkan 'Email/Password' di Firebase Authentication
 #define API_KEY "AIzaSyAge_ZYN3uFaRG5qsfPbNYQ0pTAHEWfXq4" // Ganti dengan Project API Key Anda (Ditemukan di Project Settings > General)
 #define DATABASE_URL "https://latm11-default-rtdb.asia-southeast1.firebasedatabase.app/" // Ganti dengan URL Realtime Database Anda (Contoh: https://nama-projek-default-rtdb.asia-east1.firebasedatabase.app)
-#define USER_EMAIL "kenny45@gmail.com" // Ganti dengan email akun yang terdaftar di Firebase Auth
-#define USER_PASSWORD "kenny12345"           // Ganti dengan password akun yang terdaftar di Firebase Auth
+#define USER_EMAIL "kenny27@gmail.com" // Ganti dengan email akun yang terdaftar di Firebase Auth
+#define USER_PASSWORD "kenny123"           // Ganti dengan password akun yang terdaftar di Firebase Auth
 
 // --- Definisi Pin Sensor (Contoh) ---
 // Ini menentukan pin GPIO mana yang digunakan oleh sensor di mikrokontroler Anda (misalnya ESP32)
